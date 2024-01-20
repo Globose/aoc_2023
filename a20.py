@@ -36,10 +36,8 @@ def p1():
         low = 0
         high = 0
         # que = [("inv", "low")]
-        i = 0
-        while True:
+        for i in range(1000):
             que = [("broadcaster", "low", "button")]
-            go = True
             while len(que) > 0:
                 pulse = que.pop(0)
                 # print(pulse[2], f"-{pulse[1]}->",pulse[0])
@@ -48,8 +46,6 @@ def p1():
                 else:
                     high += 1
                 # print("pulse", pulse, low, high)
-                if pulse[0] == "rx" and pulse[1] == "low":
-                    go = False
                 module = modules.get(pulse[0])
                 if module is None:
                     continue
@@ -77,12 +73,6 @@ def p1():
 
                 for d in module[1]:
                     que.append((d, send_signal, pulse[0]))
-            if not go:
-                break
-            i += 1
-            if i % 50000 == 0:
-                print(i)
-
         print(low, high)
         print(low*high)
 
