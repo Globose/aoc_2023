@@ -47,4 +47,64 @@ def p1():
             if accept:
                 totalsum += sum(p)
         print(totalsum)
-p1()
+
+def p2_work(htable, id, part):
+    # print("N", id, part)
+    for p in part:
+        if p[1] < p[0]:
+            return 0
+    if id == "A":
+        psum = 1
+        for p in part:
+            psum *= p[1]-p[0]
+        # print("  ", psum)
+        return psum
+    if id == "R":
+        return 0
+    hlst = htable.get(id)
+    totalsum = 0
+    for rule in hlst:
+        if rule.find(">") == -1 and rule.find("<") == -1:
+            totalsum += p2_work(htable, rule, part)
+            continue
+
+        col_index = rule.find(":")
+        num = (int)(rule[2:col_index])
+        index = IND[rule[0]]
+        if rule[1] == '>':
+            p1 = part.copy()
+            p2 = part.copy()
+            p1[index] = (max(num+1, p1[index][0]),p1[index][1])
+            p2[index] = (p2[index][0], min(num+1, p2[index][1]))
+            # print("R", rule, p1)
+            totalsum += p2_work(htable, rule[col_index+1:], p1)
+            part = p2
+        else:
+            p1 = part.copy()
+            p2 = part.copy()
+            p1[index] = (p1[index][0],min(num, p1[index][1]))
+            p2[index] = (min(num, p2[index][1]), p2[index][1])
+            totalsum += p2_work(htable, rule[col_index+1:], p1)
+            part = p2
+    return totalsum
+
+def p2():
+    with open('data/a19.txt', 'r', encoding='UTF-8') as file:
+        A = []
+        for s in file:
+            A.append(s.strip("\n"))
+
+        htable = {}
+
+        for a in A:
+            if a == "":
+                break
+            x = a.find("{")
+            name = a[:x]
+            rules = a[x+1:-1].split(",")
+            htable[name] = rules
+        start = [(1,4001), (1,4001), (1,4001), (1,4001)]
+        q = p2_work(htable, "in", start)
+        print(q)
+
+p2()
