@@ -35,12 +35,13 @@ def p1():
                     sources[d][m] = "low"
         low = 0
         high = 0
+        counter = 0
         # que = [("inv", "low")]
         for i in range(1000):
             que = [("broadcaster", "low", "button")]
             while len(que) > 0:
                 pulse = que.pop(0)
-                # print(pulse[2], f"-{pulse[1]}->",pulse[0])
+                print(pulse[2], f"-{pulse[1]}->",pulse[0])
                 if pulse[1] == "low":
                     low += 1
                 else:
@@ -73,7 +74,11 @@ def p1():
 
                 for d in module[1]:
                     que.append((d, send_signal, pulse[0]))
+            counter += 1
+            print(f"{counter}. {low}; {high}")
+            low = high = 0
         print(low, high)
         print(low*high)
+
 
 p1()

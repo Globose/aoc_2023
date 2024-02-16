@@ -138,6 +138,6 @@ def p2_2():
         print(ranges[0][0])
         # print(ranges)
 
-p1()
+# p1()
 # p2()
 p2_2()
