@@ -81,9 +81,7 @@ def p1():
         print(low*high)
 
 
-<<<<<<< Updated upstream
 p1()
-=======
 def p2():
     with open('data/a20.txt', 'r', encoding='UTF-8') as file:
         A = []
@@ -170,4 +168,3 @@ def p2():
 
 #p1()
 p2()
->>>>>>> Stashed changes
