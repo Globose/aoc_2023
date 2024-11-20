@@ -2,25 +2,26 @@ DIR = ((0,-1), (-1,0), (1,0), (0,1))
 symbols = {'^':0, '<':1, '>':2, 'v':3}
 from collections import deque
 
-class Node:
+class Cell:
     def __init__(self, x, y, value) -> None:
         self.value = value
         self.x = x
         self.y = y
-        self.neighbors = []
+        self.adj = []
+        self.connections = []
         self.visited = False
 
-    def add_neighbors(self, nodes):
+    def add_neighbors(self, cells):
         for d in DIR:
-            neigbor = nodes.get((self.x+d[0],self.y+d[1]))
-            if neigbor:
-                self.neighbors.append(neigbor)
+            neighbor = cells.get((self.x+d[0],self.y+d[1]))
+            if neighbor:
+                self.adj.append(neighbor)
 
-    def get_cords(self):
+    def cords(self):
         return (self.x,self.y)
 
     def __eq__(self, other):
-        if isinstance(other, Node):
+        if isinstance(other, Cell):
             return self.x == other.x and self.y == other.y
         elif isinstance(other, tuple):
             return (self.x, self.y) == other
@@ -33,7 +34,7 @@ class Node:
         return f"({self.x}, {self.y}) = {self.value}"
 
     def __str__(self) -> str:
-        return f"{self.value}"
+        return f"({self.x}, {self.y}) = {self.value}"
 
 class Grid:
     def __init__(self, grid) -> None:
@@ -42,7 +43,7 @@ class Grid:
         self.height = len(grid)
         for y, row in enumerate(grid):
             for x, cell in enumerate(row):
-                n = Node(x,y,cell)
+                n = Cell(x,y,cell)
                 self.grid[n] = n
 
         for node in self.grid:
@@ -81,36 +82,66 @@ class Grid:
                 counter += 1
         return counter
 
+
+def get_unvisited(cell):
+    adj_cells = []
+    for c2 in cell.adj:
+        if c2.value != '#' and not c2.visited: 
+            adj_cells.append(c2)
+    return len(adj_cells), adj_cells
+
+def longest_path(start_node, end_node):
+    if end_node == start_node:
+        return 1
+    start_node.visited = True
+    p_len = 0
+    for c in start_node.connections:
+        if not c[0].visited:
+            p_value = longest_path(c[0], end_node)
+            if p_value:
+                p_len = max(p_len, c[1]+p_value)
+    start_node.visited = False
+    return p_len
+
 def main():
     A = []
     with open('data/a23.txt', 'r', encoding='UTF-8') as file:
         A = [line.strip() for line in file]
     grid = Grid(A)
-    goals = 0
-    d = deque()
-    p_len = 0
-    start = grid.get(1,0)
-    d.append(start)
-    while len(d) > 0:
-        top = d[-1]
-        if top.get_cords()[1] == grid.height-1:
-            if p_len > goals:
-                goals = p_len
-                print(goals)
-            p_len += 1
-            top.visited = True
-        if top.visited:
-            top.visited = False
-            d.pop()
-            p_len -= 1
-            continue
-        p_len += 1
-        top.visited = True
-        for n in top.neighbors:
-            if n.value != '#' and not n.visited:
-                d.append(n)
-    print(goals)
-        
+    unvisited_node_cells = [grid.get(1,0)]
+    nodes = [grid.get(1,0)]
+    while len(unvisited_node_cells) > 0:
+        current_cell = unvisited_node_cells.pop()
+        current_cell.visited = True
+
+        for c_neigh in current_cell.adj:
+            if c_neigh.value == '#' or c_neigh.visited:
+                continue
+            w_len = 1
+            walker: Cell
+            walker = c_neigh
+            num_paths, paths = get_unvisited(walker)
+            
+            while num_paths == 1 and not walker in nodes:
+                w_len += 1
+                walker.visited = True
+                walker = paths[0]
+                num_paths, paths = get_unvisited(walker)
+
+            if walker not in nodes:
+                nodes.append(walker)
+            if num_paths > 1:
+                unvisited_node_cells.append(walker) 
+            current_cell.connections.append((walker, w_len))
+            walker.connections.append((current_cell, w_len))
+        current_cell.visited = False 
+
+    # for n in nodes:
+    #     n:Cell
+    #     print(n, n.connections, n.visited)
+
+    lp = longest_path(grid.get(1,0), grid.get(grid.width-2,grid.height-1))-1
+    print(lp)
 
                     
 if __name__ == '__main__':
